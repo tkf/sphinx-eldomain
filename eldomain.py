@@ -31,8 +31,8 @@ from sphinx.util.nodes import make_refnode
 from sphinx.util.compat import Directive
 from sphinx.util.docfields import Field, GroupedField
 
-doc_strings = {}
-args = {}
+DATA_DOC_STRINGS = {}
+DATA_ARGS = {}
 
 
 def bool_option(arg):
@@ -85,7 +85,7 @@ class ELSExp(ObjectDescription):
 
         objtype = self.get_signature_prefix(sig)
         signode.append(addnodes.desc_annotation(objtype, objtype))
-        lisp_args = args[package].get(sig, [])
+        lisp_args = DATA_ARGS[package].get(sig, [])
 
         if lisp_args:
             function_name = addnodes.desc_name(sig, sig + " ")
@@ -135,7 +135,7 @@ class ELSExp(ObjectDescription):
         if "nodoc" not in self.options:
             package = self.env.temp_data.get('el:package')
             node = addnodes.desc_content()
-            string = doc_strings.get(package).get(self.names[0][1], "")
+            string = DATA_DOC_STRINGS.get(package).get(self.names[0][1], "")
             lines = string2lines(string)
             self.state.nested_parse(StringList(lines), 0, node)
             if (result[1][1].children and
@@ -279,19 +279,19 @@ def index_package(emacs, package, prefix, pre_load, extra_args=[]):
             "STDOUT:\n{1}\n\nSTDERR:\n{2}\n".format(
                 ' '.join(command), stdout, stderr))
     lisp_data = json.loads(stdout)
-    doc_strings[package] = {}
+    DATA_DOC_STRINGS[package] = {}
 
     # FIXME: support using same name for function/variable/face
     for key in ['face', 'variable', 'function']:
         for data in lisp_data[key]:
             doc = data['doc']
             if doc:
-                doc_strings[package][data['name']] = doc_to_rst(doc)
+                DATA_DOC_STRINGS[package][data['name']] = doc_to_rst(doc)
 
-    args[package] = {}
+    DATA_ARGS[package] = {}
 
     for data in lisp_data['function']:
-        args[package][data['name']] = data['arg']
+        DATA_ARGS[package][data['name']] = data['arg']
 
 
 def load_packages(app):
