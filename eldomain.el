@@ -46,7 +46,7 @@
         collect `((name . ,name) (arg . ,arg) (doc . ,doc))))
 
 (defun eldomain-get-variable-data ()
-  (loop for x in (eldomain-get-symbols #'fboundp)
+  (loop for x in (eldomain-get-symbols #'boundp)
         for name = (format "%S" x)
         for doc = (documentation-property x 'variable-documentation t)
         collect `((name . ,name) (doc . ,doc))))
