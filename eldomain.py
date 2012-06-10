@@ -19,11 +19,32 @@ import re
 import subprocess
 import json
 
-from sphinxcontrib.cldomain import CLDomain, doc_strings, args
+from sphinxcontrib.cldomain import (
+    CLsExp, CLCurrentPackage, CLDomain, doc_strings, args)
+
+
+class ELsExp(CLsExp):
+    _domain_name = 'el'
+
+
+class ELCurrentPackage(CLCurrentPackage):
+    _domain_name = 'el'
+
+
+class ELDomain(CLDomain):
+    name = 'el'
+    label = 'Emacs Lisp'
+
+    directives = {
+        'package': ELCurrentPackage,
+        'function': ELsExp,
+        'macro': ELsExp,
+        'variable': ELsExp,
+    }
 
 
 def doc_to_rst(docstring):
-    docstring = _eldoc_quote_re.sub(r":cl:symbol:`\1`", docstring)
+    docstring = _eldoc_quote_re.sub(r":el:symbol:`\1`", docstring)
     return docstring
 _eldoc_quote_re = re.compile(r"`(\S+)'")
 
@@ -64,17 +85,13 @@ def load_packages(app):
     emacs = app.config.emacs_executable
     # `app.confdir` will be ignored if `elisp_pre_load` is an absolute path
     pre_load = path.join(app.confdir, app.config.elisp_pre_load)
-    for (name, prefix) in app.config.lisp_packages.iteritems():
+    for (name, prefix) in app.config.elisp_packages.iteritems():
         index_package(emacs, name.upper(), prefix, pre_load)
 
 
 def setup(app):
-    # monkey patch cldomain
-    import sphinxcontrib.cldomain
-    sphinxcontrib.cldomain.load_packages = load_packages
-
-    app.add_domain(CLDomain)
+    app.add_domain(ELDomain)
     app.add_config_value('emacs_executable', 'emacs', 'env')
     app.add_config_value('elisp_pre_load', 'conf.el', 'env')
-    app.add_config_value('lisp_packages', {}, 'env')
+    app.add_config_value('elisp_packages', {}, 'env')
     app.connect('builder-inited', load_packages)

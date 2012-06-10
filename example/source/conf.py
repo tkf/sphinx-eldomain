@@ -248,4 +248,4 @@ texinfo_documents = [
 # -- Options for EL domain -----------------------------------------------------
 
 emacs_executable = 'emacs-snapshot'
-lisp_packages = {'eldomain-example': 'ee:'}
+elisp_packages = {'eldomain-example': 'ee:'}
