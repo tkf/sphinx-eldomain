@@ -57,10 +57,36 @@
         for doc = (documentation-property x 'face-documentation t)
         collect `((name . ,name) (doc . ,doc))))
 
+(defun eldomain-keymap-to-data (keymap)
+  (let* (data
+         eldomain-keymap-parent
+         eldomain-describe-keymap      ; to shut up compiler...
+         (eldomain-describe-keymap
+          (lambda (event value)
+            (let* ((parent eldomain-keymap-parent)
+                   (eldomain-keymap-parent (append parent (list event))))
+              (if (keymapp value)
+                  (map-keymap eldomain-describe-keymap value)
+                (push (list :key (key-description eldomain-keymap-parent)
+                            :func value
+                            :doc (documentation value))
+                      data))))))
+    (map-keymap eldomain-describe-keymap keymap)
+    data))
+
+(defun eldomain-get-keymap-data ()
+  (loop for x in (eldomain-get-symbols
+                  (lambda (v) (and (boundp v) (keymapp (eval v)))))
+        for name = (format "%S" x)
+        for doc = (documentation-property x 'variable-documentation t)
+        for data = (apply #'vector (eldomain-keymap-to-data (eval x)))
+        collect `((name . ,name) (doc . ,doc) (data . ,data))))
+
 (defun eldomain-get-data ()
   `((function . ,(apply #'vector (eldomain-get-function-data)))
     (variable . ,(apply #'vector (eldomain-get-variable-data)))
-    (face     . ,(apply #'vector (eldomain-get-face-data)))))
+    (face     . ,(apply #'vector (eldomain-get-face-data)))
+    (keymap   . ,(apply #'vector (eldomain-get-keymap-data)))))
 
 (defun eldomain-main ()
   (assert eldomain-prefix nil "`eldomain-prefix' must be set.")

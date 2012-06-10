@@ -48,6 +48,7 @@ from sphinx.util.nodes import make_refnode
 from sphinx.util.compat import Directive
 from sphinx.util.docfields import Field, GroupedField
 
+DATA = {}
 DATA_DOC_STRINGS = {}
 DATA_ARGS = {}
 
@@ -191,6 +192,44 @@ class ELCurrentPackage(Directive):
         return []
 
 
+class ELKeyMap(Directive):
+
+    has_content = False
+    required_arguments = 1
+    optional_arguments = 0
+    final_argument_whitespace = True
+
+    def run(self):
+        env = self.state.document.settings.env
+        package = env.temp_data.get('el:package')
+        keymap_list = DATA.get(package, {}).get('keymap', [])
+        keymap_name = self.arguments[0]
+        for keymap in keymap_list:
+            if keymap['name'] == keymap_name:
+                break
+        else:
+            return [self.state.reporter.warning(
+                "Keymap {0} not found".format(keymap_name))]
+        nodelist = []
+
+        mapdoc = keymap['doc']
+        if mapdoc:
+            nodelist.append(nodes.paragraph(text=mapdoc))
+
+        deflist = nodes.definition_list()
+        for keybind in keymap['data']:
+            defitem = nodes.definition_list_item()
+            defitem += nodes.term("", "", nodes.literal(text=keybind['key']))
+            defitem += nodes.classifier(text=keybind['func'])
+            if keybind['doc']:
+                defitem += nodes.definition(
+                    "", nodes.paragraph(text=keybind['doc']))
+            deflist += defitem
+        nodelist.append(deflist)
+
+        return nodelist
+
+
 class ELXRefRole(XRefRole):
     def process_link(self, env, refnode, has_explicit_title, title, target):
         if not has_explicit_title:
@@ -221,6 +260,7 @@ class ELDomain(Domain):
         'function': ELSExp,
         'macro': ELSExp,
         'variable': ELSExp,
+        'keymap': ELKeyMap,
     }
 
     roles = {
@@ -296,7 +336,7 @@ def index_package(emacs, package, prefix, pre_load, extra_args=[]):
             "Error while executing '{0}'.\n\n"
             "STDOUT:\n{1}\n\nSTDERR:\n{2}\n".format(
                 ' '.join(command), stdout, stderr))
-    lisp_data = json.loads(stdout)
+    DATA[package] = lisp_data = json.loads(stdout)
     DATA_DOC_STRINGS[package] = {}
 
     # FIXME: support using same name for function/variable/face
