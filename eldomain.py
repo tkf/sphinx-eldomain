@@ -113,13 +113,6 @@ class ELSExp(ObjectDescription):
         # note target
         type, name = name
 
-        if 'el:package' in self.env.temp_data:
-            package = self.options.get(
-                'module', self.env.temp_data.get('el:package'))
-            name = package + ":" + name
-        else:
-            package = ""
-
         if name not in self.state.document.ids:
             signode['names'].append(name)
             signode['ids'].append(name)
