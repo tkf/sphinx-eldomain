@@ -85,7 +85,7 @@ class ELSExp(ObjectDescription):
 
         objtype = self.get_signature_prefix(sig)
         signode.append(addnodes.desc_annotation(objtype, objtype))
-        lisp_args = args[package].get(sig.upper(), "")
+        lisp_args = args[package].get(sig, [])
 
         if lisp_args:
             function_name = addnodes.desc_name(sig, sig + " ")
@@ -101,7 +101,7 @@ class ELSExp(ObjectDescription):
         symbol_name = sig
         if not symbol_name:
             raise Exception("Unknown symbol type for signature %s" % sig)
-        return objtype.strip(), symbol_name.upper()
+        return objtype.strip(), symbol_name
 
     def get_index_text(self, name, type):
         return _('%s (Lisp %s)') % (name, type)
@@ -169,8 +169,7 @@ class ELCurrentPackage(Directive):
 
     def run(self):
         env = self.state.document.settings.env
-        env.temp_data['el:package'] = self.arguments[0].upper()
-        #index_package(self.arguments[0].upper())
+        env.temp_data['el:package'] = self.arguments[0]
         return []
 
 
@@ -240,7 +239,7 @@ class ELDomain(Domain):
 
     def resolve_xref(self, env, fromdocname, builder,
                      typ, target, node, contnode):
-        matches = self.find_obj(env, target.upper())
+        matches = self.find_obj(env, target)
         if not matches:
             return None
         elif len(matches) > 1:
@@ -287,12 +286,12 @@ def index_package(emacs, package, prefix, pre_load, extra_args=[]):
         for data in lisp_data[key]:
             doc = data['doc']
             if doc:
-                doc_strings[package][data['name'].upper()] = doc_to_rst(doc)
+                doc_strings[package][data['name']] = doc_to_rst(doc)
 
     args[package] = {}
 
     for data in lisp_data['function']:
-        args[package][data['name'].upper()] = data['arg']
+        args[package][data['name']] = data['arg']
 
 
 def load_packages(app):
@@ -300,7 +299,7 @@ def load_packages(app):
     # `app.confdir` will be ignored if `elisp_pre_load` is an absolute path
     pre_load = path.join(app.confdir, app.config.elisp_pre_load)
     for (name, prefix) in app.config.elisp_packages.iteritems():
-        index_package(emacs, name.upper(), prefix, pre_load)
+        index_package(emacs, name, prefix, pre_load)
 
 
 def setup(app):
