@@ -41,7 +41,8 @@
 (defun eldomain-get-function-data ()
   (loop for x in (eldomain-get-symbols #'fboundp)
         for name = (format "%S" x)
-        for arg = (format "%S" (help-function-arglist x))
+        for arg = (let ((arglist (help-function-arglist x)))
+                    (if arglist (format "%S" arglist) "()"))
         for doc = (documentation x)
         collect `((name . ,name) (arg . ,arg) (doc . ,doc))))
 
