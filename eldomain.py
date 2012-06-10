@@ -85,7 +85,7 @@ class ELSExp(ObjectDescription):
 
         objtype = self.get_signature_prefix(sig)
         signode.append(addnodes.desc_annotation(objtype, objtype))
-        lisp_args = DATA_ARGS[package].get(sig, [])
+        lisp_args = DATA_ARGS.get(package, {}).get(sig, [])
 
         if lisp_args:
             function_name = addnodes.desc_name(sig, sig + " ")
@@ -135,7 +135,8 @@ class ELSExp(ObjectDescription):
         if "nodoc" not in self.options:
             package = self.env.temp_data.get('el:package')
             node = addnodes.desc_content()
-            string = DATA_DOC_STRINGS.get(package).get(self.names[0][1], "")
+            string = DATA_DOC_STRINGS.get(package, {}) \
+                                     .get(self.names[0][1], "")
             lines = string2lines(string)
             self.state.nested_parse(StringList(lines), 0, node)
             if (result[1][1].children and

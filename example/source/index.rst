@@ -24,6 +24,15 @@ Emacs lisp source code:
 .. literalinclude:: eldomain-example.el
    :language: cl
 
+
+Other examples
+==============
+
+.. toctree::
+
+   no-package
+
+
 Indices and tables
 ==================
 
