@@ -15,10 +15,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from os import path
+import re
 import subprocess
 import json
 
 from sphinxcontrib.cldomain import CLDomain, doc_strings, args
+
+
+def doc_to_rst(docstring):
+    docstring = _eldoc_quote_re.sub(r":cl:symbol:`\1`", docstring)
+    return docstring
+_eldoc_quote_re = re.compile(r"`(\S+)'")
 
 
 def index_package(emacs, package, prefix, pre_load, extra_args=[]):
@@ -43,7 +50,9 @@ def index_package(emacs, package, prefix, pre_load, extra_args=[]):
     # FIXME: support using same name for function/variable/face
     for key in ['face', 'variable', 'function']:
         for data in lisp_data[key]:
-            doc_strings[package][data['name'].upper()] = data['doc']
+            doc = data['doc']
+            if doc:
+                doc_strings[package][data['name'].upper()] = doc_to_rst(doc)
 
     args[package] = {}
 
