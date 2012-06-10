@@ -14,6 +14,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+The Emacs Lisp domain
+~~~~~~~~~~~~~~~~~~~~~
+
+This Sphinx extension provides directives and roles under the domain
+``el`` for documenting Emacs Lisp program.  It also provides autodoc
+functionality -- docstrings in the Emacs Lisp is automatically
+inserted in the documentation.
+
+.. note::
+   The source code is heavily borrowed from the `Common Lisp domain`_.
+
+.. _`Common Lisp domain`:
+   https://github.com/russell/sphinxcontrib-cldomain
+
+"""
+
 from os import path
 import re
 import subprocess
