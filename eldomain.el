@@ -60,6 +60,7 @@
 (defun eldomain-keymap-to-data (keymap)
   (let* (data
          eldomain-keymap-parent
+         (eldomain-prefix-regexp (format "^%s" eldomain-prefix))
          eldomain-describe-keymap      ; to shut up compiler...
          (eldomain-describe-keymap
           (lambda (event value)
@@ -69,7 +70,9 @@
                   (map-keymap eldomain-describe-keymap value)
                 (push (list :key (key-description eldomain-keymap-parent)
                             :func value
-                            :doc (documentation value))
+                            :doc (when (string-match eldomain-prefix-regexp
+                                                     (format "%S" value))
+                                   (documentation value)))
                       data))))))
     (map-keymap eldomain-describe-keymap keymap)
     data))
