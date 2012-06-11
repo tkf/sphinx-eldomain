@@ -214,7 +214,10 @@ class ELKeyMap(Directive):
 
         mapdoc = keymap['doc']
         if mapdoc:
-            nodelist.append(nodes.paragraph(text=mapdoc))
+            nd = nodes.paragraph()
+            lines = string2lines(doc_to_rst(mapdoc))
+            self.state.nested_parse(StringList(lines), 0, nd)
+            nodelist.append(nd)
 
         deflist = nodes.definition_list()
         for keybind in keymap['data']:
@@ -222,8 +225,10 @@ class ELKeyMap(Directive):
             defitem += nodes.term("", "", nodes.literal(text=keybind['key']))
             defitem += nodes.classifier(text=keybind['func'])
             if keybind['doc']:
-                defitem += nodes.definition(
-                    "", nodes.paragraph(text=keybind['doc']))
+                nd = nodes.paragraph()
+                lines = string2lines(doc_to_rst(keybind['doc']))
+                self.state.nested_parse(StringList(lines), 0, nd)
+                defitem += nodes.definition("", nd)
             deflist += defitem
         nodelist.append(deflist)
 
