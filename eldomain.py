@@ -225,9 +225,9 @@ class ELKeyMap(Directive):
             desc['objtype'] = 'keybind'
             desc['noindex'] = False
             signode = addnodes.desc_signature()
-            # signode.append(addnodes.desc_annotation("", 'keybind '))
-            signode.append(addnodes.desc_name("", keybind['key']))
-            signode.append(addnodes.desc_addname("", " " + keybind['func']))
+            # signode += addnodes.desc_annotation("", 'keybind ')
+            signode += addnodes.desc_name("", keybind['key'])
+            signode += addnodes.desc_addname("", " " + keybind['func'])
             desc += signode
             if keybind['doc']:
                 nd = addnodes.desc_content()
