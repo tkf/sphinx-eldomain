@@ -219,18 +219,22 @@ class ELKeyMap(Directive):
             self.state.nested_parse(StringList(lines), 0, nd)
             nodelist.append(nd)
 
-        deflist = nodes.definition_list()
         for keybind in keymap['data']:
-            defitem = nodes.definition_list_item()
-            defitem += nodes.term("", "", nodes.literal(text=keybind['key']))
-            defitem += nodes.classifier(text=keybind['func'])
+            defitem = addnodes.desc()
+            defitem['domain'] = 'el'
+            defitem['objtype'] = 'keybind'
+            defitem['noindex'] = False
+            signode = addnodes.desc_signature()
+            # signode.append(addnodes.desc_annotation("", 'keybind '))
+            signode.append(addnodes.desc_name("", keybind['key']))
+            signode.append(addnodes.desc_addname("", " " + keybind['func']))
+            defitem += signode
             if keybind['doc']:
-                nd = nodes.paragraph()
+                nd = addnodes.desc_content()
                 lines = string2lines(doc_to_rst(keybind['doc']))
                 self.state.nested_parse(StringList(lines), 0, nd)
                 defitem += nodes.definition("", nd)
-            deflist += defitem
-        nodelist.append(deflist)
+            nodelist.append(defitem)
 
         return nodelist
 
