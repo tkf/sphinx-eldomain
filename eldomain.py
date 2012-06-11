@@ -220,21 +220,21 @@ class ELKeyMap(Directive):
             nodelist.append(nd)
 
         for keybind in keymap['data']:
-            defitem = addnodes.desc()
-            defitem['domain'] = 'el'
-            defitem['objtype'] = 'keybind'
-            defitem['noindex'] = False
+            desc = addnodes.desc()
+            desc['domain'] = 'el'
+            desc['objtype'] = 'keybind'
+            desc['noindex'] = False
             signode = addnodes.desc_signature()
             # signode.append(addnodes.desc_annotation("", 'keybind '))
             signode.append(addnodes.desc_name("", keybind['key']))
             signode.append(addnodes.desc_addname("", " " + keybind['func']))
-            defitem += signode
+            desc += signode
             if keybind['doc']:
                 nd = addnodes.desc_content()
                 lines = string2lines(doc_to_rst(keybind['doc']))
                 self.state.nested_parse(StringList(lines), 0, nd)
-                defitem += nodes.definition("", nd)
-            nodelist.append(defitem)
+                desc += nodes.definition("", nd)
+            nodelist.append(desc)
 
         return nodelist
 
