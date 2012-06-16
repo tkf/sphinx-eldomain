@@ -33,6 +33,7 @@ inserted in the documentation.
 
 from os import path
 import re
+import itertools
 import subprocess
 import json
 
@@ -192,12 +193,53 @@ class ELCurrentPackage(Directive):
         return []
 
 
+def parse_text_list(argument, delimiter=','):
+    """
+    Converts a space- or comma-separated list of values into a list
+    """
+    if delimiter in argument:
+        entries = argument.split(delimiter)
+    else:
+        entries = argument.split()
+    return [v.strip() for v in entries]
+
+
+def compose(f, g):
+    def h(*args, **kwds):
+        return f(g(*args, **kwds))
+    return h
+
+
+def filter_by_exclude_regexp_list(candidates, regexp_list, getter=lambda x: x):
+    """
+    Exclude elements in `candidates` that matches to one of the regexp.
+
+    >>> filter_by_exclude_regexp_list(['a', 'aa', 'bb'], ['a+'])
+    ['bb']
+    >>> filter_by_exclude_regexp_list(['a', 'ab', 'bb'], ['a+', 'a?b$'])
+    ['bb']
+    >>> filter_by_exclude_regexp_list(
+    ...     [{'key': 'a'}, {'key': 'ab'}, {'key': 'bb'}],
+    ...     ['a+', 'a?b$'],
+    ...     lambda x: x['key'])
+    [{'key': 'bb'}]
+
+    """
+    for compiled in map(re.compile, regexp_list):
+        test = compose(compiled.match, getter)
+        candidates = itertools.ifilterfalse(test, candidates)
+    return list(candidates)
+
+
 class ELKeyMap(Directive):
 
     has_content = False
     required_arguments = 1
     optional_arguments = 0
     final_argument_whitespace = True
+    option_spec = {
+        'exclude': parse_text_list,
+    }
 
     def run(self):
         env = self.state.document.settings.env
@@ -219,7 +261,9 @@ class ELKeyMap(Directive):
             self.state.nested_parse(StringList(lines), 0, nd)
             nodelist.append(nd)
 
-        for keybind in keymap['data']:
+        exclude = self.options.get('exclude', [])
+        for keybind in filter_by_exclude_regexp_list(
+                keymap['data'], exclude, lambda x: x['func']):
             desc = addnodes.desc()
             desc['domain'] = 'el'
             desc['objtype'] = 'keybind'
