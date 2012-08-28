@@ -66,14 +66,18 @@
           (lambda (event value)
             (let* ((parent eldomain-keymap-parent)
                    (eldomain-keymap-parent (append parent (list event))))
-              (if (keymapp value)
-                  (map-keymap eldomain-describe-keymap value)
+              (cond
+               ((keymapp value)
+                (map-keymap eldomain-describe-keymap value))
+               ((and (listp value) (eq (car value) 'menu-item))
+                nil)              ; ignore menu
+               (value             ; do not record when func is not set
                 (push (list :key (key-description eldomain-keymap-parent)
                             :func value
                             :doc (when (string-match eldomain-prefix-regexp
                                                      (format "%S" value))
                                    (documentation value)))
-                      data))))))
+                      data)))))))
     (map-keymap eldomain-describe-keymap keymap)
     data))
 
