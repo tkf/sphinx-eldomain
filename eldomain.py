@@ -31,6 +31,7 @@ inserted in the documentation.
 
 """
 
+import os
 from os import path
 import re
 import itertools
@@ -415,7 +416,9 @@ def load_packages(app):
 
 def setup(app):
     app.add_domain(ELDomain)
-    app.add_config_value('emacs_executable', 'emacs', 'env')
+    app.add_config_value('emacs_executable',
+                         os.getenv("EMACS") or 'emacs',
+                         'env')
     app.add_config_value('elisp_pre_load', 'conf.el', 'env')
     app.add_config_value('elisp_packages', {}, 'env')
     app.connect('builder-inited', load_packages)
