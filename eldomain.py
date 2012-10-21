@@ -62,6 +62,18 @@ def bool_option(arg):
     return True
 
 
+def string_list(delimiter):
+    """
+    Return a parser for option_spec to parse strings separated by `delimiter`.
+
+    >>> parser = string_list(',')
+    >>> parser('a, b, c')
+    ['a', 'b', 'c']
+
+    """
+    return lambda argument: [v.strip() for v in argument.split(delimiter)]
+
+
 class ELSExp(ObjectDescription):
 
     doc_field_types = [
@@ -232,6 +244,24 @@ def filter_by_exclude_regexp_list(candidates, regexp_list, getter=lambda x: x):
     return list(candidates)
 
 
+def simple_sed(scripts, string):
+    r"""
+    A simple sed-like function
+
+    >>> simple_sed(['s/before/after/g'], 'and then before that ...')
+    'and then after that ...'
+    >>> simple_sed([r's/([0-9])/\1\1/g'], 'there are 2 apples')
+    'there are 22 apples'
+
+    """
+    for scr in scripts:
+        scr = scr.lstrip('s')
+        scr_split = scr[1:].split(scr[0])
+        (regexp, replace) = scr_split[:2]
+        string = re.sub(regexp, replace, string)
+    return string
+
+
 class ELKeyMap(Directive):
 
     has_content = False
@@ -240,6 +270,7 @@ class ELKeyMap(Directive):
     final_argument_whitespace = True
     option_spec = {
         'exclude': parse_text_list,
+        'replace': string_list('\n'),
     }
 
     def run(self):
@@ -263,6 +294,7 @@ class ELKeyMap(Directive):
             nodelist.append(nd)
 
         exclude = self.options.get('exclude', [])
+        replace = self.options.get('replace', [])
         for keybind in filter_by_exclude_regexp_list(
                 keymap['data'], exclude, lambda x: x['func']):
             desc = addnodes.desc()
@@ -271,7 +303,8 @@ class ELKeyMap(Directive):
             desc['noindex'] = False
             signode = addnodes.desc_signature()
             # signode += addnodes.desc_annotation("", 'keybind ')
-            signode += addnodes.desc_name("", keybind['key'])
+            key = simple_sed(replace, keybind['key'])
+            signode += addnodes.desc_name("", key)
             signode += addnodes.desc_addname("", " " + keybind['func'])
             desc += signode
             if keybind['doc']:
