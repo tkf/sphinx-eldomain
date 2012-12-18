@@ -170,6 +170,8 @@ class ELSExp(ObjectDescription):
             string = DATA_DOC_STRINGS.get(package, {}) \
                                      .get(self.names[0][1], "")
             lines = string2lines(string)
+            if lines[-1].startswith('(fn '):
+                lines = lines[:-1]
             self.state.nested_parse(StringList(lines), 0, node)
             if (result[1][1].children and
                 isinstance(result[1][1][0], nodes.field_list)):
@@ -290,6 +292,8 @@ class ELKeyMap(Directive):
         if mapdoc:
             nd = nodes.paragraph()
             lines = string2lines(doc_to_rst(mapdoc))
+            if lines[-1].startswith('(fn '):
+                lines = lines[:-1]
             self.state.nested_parse(StringList(lines), 0, nd)
             nodelist.append(nd)
 
@@ -310,6 +314,8 @@ class ELKeyMap(Directive):
             if keybind['doc']:
                 nd = addnodes.desc_content()
                 lines = string2lines(doc_to_rst(keybind['doc']))
+                if lines[-1].startswith('(fn '):
+                    lines = lines[:-1]
                 self.state.nested_parse(StringList(lines), 0, nd)
                 desc += nodes.definition("", nd)
             nodelist.append(desc)
