@@ -402,7 +402,7 @@ class ELDomain(Domain):
 
 
 def doc_to_rst(docstring):
-    docstring = _eldoc_quote_re.sub(r":el:symbol:`\1`", docstring)
+    docstring = _eldoc_quote_re.sub(r"\ :el:symbol:`\1`\ ", docstring)
     return docstring
 _eldoc_quote_re = re.compile(r"`(\S+)'")
 
