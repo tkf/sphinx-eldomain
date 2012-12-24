@@ -454,10 +454,12 @@ def load_packages(app):
 
 
 def setup(app):
+    default_emacs = os.getenv("EMACS")
+    # `compile` command may set EMACS=t, so avoid using that value.
+    if not default_emacs or default_emacs == 't':
+        default_emacs = 'emacs'
     app.add_domain(ELDomain)
-    app.add_config_value('emacs_executable',
-                         os.getenv("EMACS") or 'emacs',
-                         'env')
+    app.add_config_value('emacs_executable', default_emacs, 'env')
     app.add_config_value('elisp_pre_load', 'conf.el', 'env')
     app.add_config_value('elisp_packages', {}, 'env')
     app.connect('builder-inited', load_packages)
