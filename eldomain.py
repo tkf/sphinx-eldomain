@@ -53,6 +53,7 @@ from sphinx.util.docfields import Field, GroupedField
 DATA = {}
 DATA_DOC_STRINGS = {}
 DATA_ARGS = {}
+DATA_VALUES = {}
 
 
 def bool_option(arg):
@@ -118,6 +119,10 @@ class ELSExp(ObjectDescription):
         objtype = self.get_signature_prefix(sig)
         signode.append(addnodes.desc_annotation(objtype, objtype))
         lisp_args = DATA_ARGS.get(package, {}).get(sig, [])
+
+        if not lisp_args:
+            v = DATA_VALUES.get(package, {}).get(sig)
+            lisp_args = [v] if v else []
 
         if lisp_args:
             function_name = addnodes.desc_name(sig, sig + " ")
@@ -440,9 +445,12 @@ def index_package(emacs, package, prefix, pre_load, extra_args=[]):
                 DATA_DOC_STRINGS[package][data['name']] = doc_to_rst(doc)
 
     DATA_ARGS[package] = {}
-
     for data in lisp_data['function']:
         DATA_ARGS[package][data['name']] = data['arg']
+
+    DATA_VALUES[package] = {}
+    for data in lisp_data['variable']:
+        DATA_VALUES[package][data['name']] = data['value']
 
 
 def load_packages(app):

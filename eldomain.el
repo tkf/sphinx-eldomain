@@ -49,7 +49,8 @@
   (loop for x in (eldomain-get-symbols #'boundp)
         for name = (format "%S" x)
         for doc = (documentation-property x 'variable-documentation t)
-        collect `((name . ,name) (doc . ,doc))))
+        for value = (format "%S" (symbol-value x))
+        collect `((name . ,name) (doc . ,doc) (value . ,value))))
 
 (defun eldomain-get-face-data ()
   (loop for x in (eldomain-get-symbols #'facep)
