@@ -413,9 +413,19 @@ class ELDomain(Domain):
 
 
 def doc_to_rst(docstring):
+    r"""
+    Convert Emacs Lisp style docstring to ReST.
+
+    >>> doc_to_rst("quoted `function' name")
+    'quoted \\ :el:symbol:`function`\\  name'
+
+    >>> doc_to_rst("`one'/`two'/`three'")
+    '\\ :el:symbol:`one`\\ /\\ :el:symbol:`two`\\ /\\ :el:symbol:`three`\\ '
+
+    """
     docstring = _eldoc_quote_re.sub(r"\ :el:symbol:`\1`\ ", docstring)
     return docstring
-_eldoc_quote_re = re.compile(r"`(\S+)'")
+_eldoc_quote_re = re.compile(r"`(\S+?)'")
 
 
 def index_package(emacs, package, prefix, pre_load, extra_args=[]):
