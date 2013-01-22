@@ -87,6 +87,10 @@ class ELSExp(ObjectDescription):
 
     option_spec = {
         'nodoc': bool_option, 'noindex': bool_option,
+        'args': string_list(','),
+        'value': lambda x: x,
+        # `value` is an alias of `args`.  Functions must use `args`
+        # and values must use `value`.
     }
 
     def handle_signature(self, sig, signode):
@@ -118,8 +122,13 @@ class ELSExp(ObjectDescription):
 
         objtype = self.get_signature_prefix(sig)
         signode.append(addnodes.desc_annotation(objtype, objtype))
-        lisp_args = DATA_ARGS.get(package, {}).get(sig, [])
 
+        lisp_args = self.options.get('args', [])
+        if not lisp_args:
+            v = self.options.get('value')
+            lisp_args = [v] if v else []
+        if not lisp_args:
+            lisp_args = DATA_ARGS.get(package, {}).get(sig, [])
         if not lisp_args:
             v = DATA_VALUES.get(package, {}).get(sig)
             lisp_args = [v] if v else []
