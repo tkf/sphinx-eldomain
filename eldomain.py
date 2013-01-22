@@ -449,15 +449,26 @@ def doc_to_rst(docstring):
     Convert Emacs Lisp style docstring to ReST.
 
     >>> doc_to_rst("quoted `function' name")
-    'quoted \\ :el:symbol:`function`\\  name'
+    'quoted :el:symbol:`function` name'
+
+    >>> doc_to_rst("it is `eval'ed")
+    'it is :el:symbol:`eval`\\ ed'
 
     >>> doc_to_rst("`one'/`two'/`three'")
     '\\ :el:symbol:`one`\\ /\\ :el:symbol:`two`\\ /\\ :el:symbol:`three`\\ '
 
     """
-    docstring = _eldoc_quote_re.sub(r"\ :el:symbol:`\1`\ ", docstring)
+    docstring = _eldoc_quote_re.sub(_eldoc_quote_replacer, docstring)
     return docstring
-_eldoc_quote_re = re.compile(r"`(\S+?)'")
+_eldoc_quote_re = re.compile(r"(\s)?`(\S+?)'(\s)?")
+
+
+def _eldoc_quote_replacer(match):
+    """Helper function for `doc_to_rst`."""
+    body = r":el:symbol:`{0}`".format(match.group(2))
+    left = match.group(1)
+    right = match.group(3)
+    return (left or r'\ ') + body + (right or r'\ ')
 
 
 def index_package(emacs, package, prefix, pre_load, extra_args=[]):
