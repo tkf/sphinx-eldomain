@@ -75,6 +75,29 @@ def string_list(delimiter):
     return lambda argument: [v.strip() for v in argument.split(delimiter)]
 
 
+def quote_value_if_necessary(value):
+    """
+    Prepend single quote to `value` if it requires quote.
+
+    :type value: str
+    :arg  value: string representation of value
+
+    >>> quote_value_if_necessary('(a b c)')
+    \"'(a b c)\"
+    >>> quote_value_if_necessary('1')
+    '1'
+    >>> quote_value_if_necessary('\"string\"')
+    '\"string\"'
+    >>> quote_value_if_necessary('nil')
+    'nil'
+
+    """
+    if value in ("", "nil") or value[0].isdigit() or value.startswith('"'):
+        return value
+    else:
+        return "'" + value
+
+
 class ELSExp(ObjectDescription):
 
     doc_field_types = [
@@ -131,7 +154,7 @@ class ELSExp(ObjectDescription):
             lisp_args = DATA_ARGS.get(package, {}).get(sig, [])
         if not lisp_args:
             v = DATA_VALUES.get(package, {}).get(sig)
-            lisp_args = [v] if v else []
+            lisp_args = [quote_value_if_necessary(v)] if v else []
 
         if lisp_args:
             function_name = addnodes.desc_name(sig, sig + " ")
