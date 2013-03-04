@@ -457,10 +457,21 @@ def doc_to_rst(docstring):
     >>> doc_to_rst("`one'/`two'/`three'")
     '\\ :el:symbol:`one`\\ /\\ :el:symbol:`two`\\ /\\ :el:symbol:`three`\\ '
 
+    >>> doc_to_rst("info node `(cl) Argument Lists'.")  # doctest: +ELLIPSIS
+    'info node `(cl) Argument Lists <http://.../cl/Argument-Lists.html>`__.'
+
     """
     docstring = _eldoc_quote_re.sub(_eldoc_quote_replacer, docstring)
+    docstring = _eldoc_info_node_re.sub(_eldoc_info_node_replacer, docstring)
     return docstring
 _eldoc_quote_re = re.compile(r"(\s)?`(\S+?)'(\s)?")
+_eldoc_info_node_re = re.compile(
+    r"((?:info|Info) (?:node|anchor)) `(?:\(([^\)]+?)\)\s+)?(\S[^']+?\S)'")
+"""
+Match syntax for hyperlink to Info documentation.
+
+See: (info "(elisp) Documentation Tips")
+"""
 
 
 def _eldoc_quote_replacer(match):
@@ -469,6 +480,17 @@ def _eldoc_quote_replacer(match):
     left = match.group(1)
     right = match.group(3)
     return (left or r'\ ') + body + (right or r'\ ')
+
+
+def _eldoc_info_node_replacer(match):
+    """Helper function for `doc_to_rst`."""
+    prefix = match.group(1)
+    filename = match.group(2)
+    nodename = match.group(3)
+    text = '({0}) {1}'.format(filename, nodename) if filename else nodename
+    url = 'http://www.gnu.org/software/emacs/manual/html_node/{0}/{1}.html' \
+          .format(filename or 'emacs', nodename.replace(' ', '-'))
+    return '{0} `{1} <{2}>`__'.format(prefix, text, url)
 
 
 def index_package(emacs, package, prefix, pre_load, extra_args=[]):
